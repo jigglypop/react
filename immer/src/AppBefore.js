@@ -1,5 +1,4 @@
 import { useCallback, useRef, useState } from "react";
-import produce from "immer";
 
 const App = () => {
     const nextId = useRef(1);
@@ -8,14 +7,16 @@ const App = () => {
         array: [],
         uselessValue: null,
     });
-    const onChange = useCallback((e) => {
-        const { name, value } = e.target;
-        setForm(
-            produce((draft) => {
-                draft[name] = value;
-            })
-        );
-    }, []);
+    const onChange = useCallback(
+        (e) => {
+            const { name, value } = e.target;
+            setForm({
+                ...form,
+                [name]: [value],
+            });
+        },
+        [form]
+    );
     const onSubmit = useCallback(
         (e) => {
             e.preventDefault();
@@ -24,30 +25,28 @@ const App = () => {
                 name: form.name,
                 username: form.username,
             };
-            setData(
-                produce((draft) => {
-                    draft.array.push(info);
-                })
-            );
+            setData({
+                ...data,
+                array: data.array.concat(info),
+            });
             setForm({
                 name: "",
                 username: "",
             });
             nextId.current += 1;
         },
-        [form.name, form.username]
+        [data, form.name, form.username]
     );
 
-    const onRemove = useCallback((id) => {
-        setData(
-            produce((draft) => {
-                draft.array.splice(
-                    draft.array.findIndex((info) => info.id === id),
-                    1
-                );
-            })
-        );
-    }, []);
+    const onRemove = useCallback(
+        (id) => {
+            setData({
+                ...data,
+                array: data.array.filter((info) => info.id !== id),
+            });
+        },
+        [data]
+    );
 
     return (
         <div className="App">
